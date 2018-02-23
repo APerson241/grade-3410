@@ -13,6 +13,7 @@ document.addEventListener( "DOMContentLoaded", function() {
         var markdownSectionRegex = /(#+)\s*(.+)/;
         var hidingLine = false; // whether to suppress this line's raw display
         var lineIsDeduction = false;
+        var inStyleSection = false;
         for( var i = 0; i < lines.length; i++ ) {
             currLine = lines[i];
             hidingLine = false;
@@ -26,9 +27,9 @@ document.addEventListener( "DOMContentLoaded", function() {
             // Section header documentation
             markdownSectionMatch = markdownSectionRegex.exec( currLine );
             if( markdownSectionMatch ) {
-                newHtml += "<h" + markdownSectionMatch[1].length + ">" +
-                    markdownSectionMatch[2] + "</h" +
-                    markdownSectionMatch[1].length + ">";
+                var level = markdownSectionMatch[1].length;
+                newHtml += "<h" + level + ">" + markdownSectionMatch[2] + "</h"
+                    + level + ">";
                 hidingLine = true;
 
                 // Also detect if this is a high-level section header
@@ -39,7 +40,16 @@ document.addEventListener( "DOMContentLoaded", function() {
                 } else if( currLine.includes( "TEST VECTORS" ) ) {
                     currSection = "Testing";
                 }
+
+                // Also detect if we're in the style section
+                if( currLine.includes( "Style" ) && ( level === 3 ) ) {
+                    inStyleSection = true;
+                } else if( inStyleSection && ( level === 3 ) ) {
+                    inStyleSection = false;
+                }
             }
+
+            // Handle multi-deduction questions
 
             var isHere = function ( someText ) { return currLine.indexOf( someText ) >= 0; };
             if( isHere( "CMS" ) ) continue;
@@ -56,9 +66,12 @@ document.addEventListener( "DOMContentLoaded", function() {
                     newHtml += "/" + maxVal;
                     window.inputMapping[id] = { line: currLine, section: currSection, max: maxVal };
                 } else {
+
+                    // CHECKBOX RUBRIC ITEMS HERE
                     id = "checkbox-" + i;
-                    newHtml += "<input type='checkbox' id='" + id + "' value='" +
-                        deductionMatch[1].replace( /\s/g, "" ).replace( "??", "" ) + "'/>";
+                    var value = deductionMatch[1].replace( /\s/g, "" ).replace( "??", "" );
+                    newHtml += "<input type='checkbox' id='" + id + "' value='" + value + "'" +
+                        " data-stylesection='" + inStyleSection + "'/>";
                     newHtml += "<label for='" + id + "'>" + currLine + "</label><br />";
                     hidingLine = true;
                     window.inputMapping[id] = { line: currLine, section: currSection };
@@ -96,16 +109,26 @@ document.addEventListener( "DOMContentLoaded", function() {
         var currMetadata;
 
         var checkboxes = document.querySelectorAll( "input[type=checkbox]" );
+        var styleSubscore = 0;
         for( var i = 0; i < checkboxes.length; i++ ) {
             if( checkboxes[i].checked ) {
                 currMetadata = inputMapping[ checkboxes[i].id ];
                 sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim();
-                sectionScore[ currMetadata.section ] += parseInt( checkboxes[i].value );
+                if( checkboxes[i].dataset.stylesection === "false" ) {
+                    sectionScore[ currMetadata.section ] += parseInt( checkboxes[i].value );
+                } else {
+                    styleSubscore += parseInt( checkboxes[i].value );
+                }
                 //sectionScore[ currMetadata.section ] -=
                 //        parseInt( currMetadata.line.substring(
                 //        currMetadata.line.indexOf( "-" ) + 1, currMetadata.line.indexOf( "]" ) ) );
             }
         }
+
+        var styleOverflow = styleSubscore < -5;
+        if( styleOverflow ) styleSubscore = -5;
+
+        sectionScore[ "Circuit" ] += styleSubscore;
 
         //var fields = document.querySelectorAll( "input[type=text]" );
         //for( var i = 0; i < fields.length; i++ ) {
@@ -123,6 +146,9 @@ document.addEventListener( "DOMContentLoaded", function() {
         for( var i = 0; i < sectionNames.length; i++ ) {
             currSec = sectionNames[i];
             comment += "<br /><br />&lt;b>" + currSec + ": " + sectionScore[currSec] + "/" + sectionMaxScore[currSec] + "&lt;/b>";
+            if( i == 0 && styleOverflow ) {
+                comment += "<br />(Although more than 5 style point deductions applied, only 5 points were deducted.)";
+            }
             comment += sectionText[currSec];
         }
         return comment;
