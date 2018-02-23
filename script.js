@@ -13,11 +13,24 @@ document.addEventListener( "DOMContentLoaded", function() {
         var markdownSectionRegex = /(#+)\s*(.+)/;
         var hidingLine = false; // whether to suppress this line's raw display
         var lineIsDeduction = false;
-        var inStyleSection = false;
+        var inStyleSection = false; // are we in the "style" section
+
+        // Multi-deduction questions
+        multiDeduction = {
+            "tion (up to -8)": 8,
+            "lication (-20 max": 20,
+            "de, e.g. failing both": 26,
+            "Control logic": 3,
+            "Subcircuit descriptions are": 3,
+            "Didn't explain how": 20
+        };
+        var currMultiDeduction = 0; // nonzero if the current line is a multideduction
+
         for( var i = 0; i < lines.length; i++ ) {
             currLine = lines[i];
             hidingLine = false;
             lineIsDeduction = false;
+            currMultiDeduction = 0;
 
             if( asteriskLineCount < 2 ) {
                 if( currLine.startsWith( "***********" ) ) asteriskLineCount++;
@@ -49,22 +62,27 @@ document.addEventListener( "DOMContentLoaded", function() {
                 }
             }
 
-            // Handle multi-deduction questions
-
             var isHere = function ( someText ) { return currLine.indexOf( someText ) >= 0; };
             if( isHere( "CMS" ) ) continue;
             if( isHere( "Pong" ) ) break;
-            deductionMatch = /\*\s*.+\| (-?\s*\d+).*/.exec( currLine );
+            for( var keyPhrase in multiDeduction ) {
+                if( isHere( keyPhrase ) ) {
+                    currMultiDeduction = multiDeduction[keyPhrase];
+                    break;
+                }
+            }
+
+            deductionMatch = /\*\s*.+\| .*?\s*(-?\s*\d+).*/.exec( currLine );
             //if( ( /\s*\[/.test( currLine ) || lines[i-1].endsWith( " or" ) ) && !isHere( "STOP" ) && !isHere( "ineff" ) ) {
             if( deductionMatch ) {
                 var slashIndex = currLine.indexOf( "[-/" );
                 var id;
-                if( slashIndex !== -1 ) {
+                if( currMultiDeduction > 0 ) {
                     id = "field-" + i;
-                    newHtml += "<input type='text' class='digit' id='" + id + "' />";
-                    var maxVal = parseInt( currLine.substring( slashIndex + 3, currLine.indexOf( "]" ) ) );
-                    newHtml += "/" + maxVal;
-                    window.inputMapping[id] = { line: currLine, section: currSection, max: maxVal };
+                    newHtml += "-<input type='text' class='digit' value='0' id='" + id + "' />";
+                    //var maxVal = parseInt( currLine.substring( slashIndex + 3, currLine.indexOf( "]" ) ) );
+                    newHtml += "/" + currMultiDeduction;
+                    window.inputMapping[id] = { line: currLine, section: currSection, max: currMultiDeduction };
                 } else {
 
                     // CHECKBOX RUBRIC ITEMS HERE
@@ -72,10 +90,10 @@ document.addEventListener( "DOMContentLoaded", function() {
                     var value = deductionMatch[1].replace( /\s/g, "" ).replace( "??", "" );
                     newHtml += "<input type='checkbox' id='" + id + "' value='" + value + "'" +
                         " data-stylesection='" + inStyleSection + "'/>";
-                    newHtml += "<label for='" + id + "'>" + currLine + "</label><br />";
-                    hidingLine = true;
                     window.inputMapping[id] = { line: currLine, section: currSection };
                 }
+                newHtml += "<label for='" + id + "'>" + currLine.replace( /^\*/, "") + "</label><br />";
+                hidingLine = true;
             }
 
             // Force linebreaks in especially beefy lines
@@ -130,14 +148,14 @@ document.addEventListener( "DOMContentLoaded", function() {
 
         sectionScore[ "Circuit" ] += styleSubscore;
 
-        //var fields = document.querySelectorAll( "input[type=text]" );
-        //for( var i = 0; i < fields.length; i++ ) {
-        //    currMetadata = inputMapping[ fields[i].id ];
-        //    if( fields[i].value.length && parseInt( fields[i].value ) < currMetadata.max ) {
-        //        sectionText[ currMetadata.section ] += "<br />[-" + ( currMetadata.max - parseInt( fields[i].value ) ) + "] " + currMetadata.line.substr( currMetadata.line.indexOf( "]" ) + 1 );
-        //        sectionScore[ currMetadata.section] -= currMetadata.max - parseInt( fields[i].value );
-        //    }
-        //}
+        var fields = document.querySelectorAll( "input[type=text]" );
+        for( var i = 0; i < fields.length; i++ ) {
+            currMetadata = inputMapping[ fields[i].id ];
+            if( fields[i].value.length && parseInt( fields[i].value ) < currMetadata.max && fields[i].value !== "0" ) {
+                sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim() + " -> -" + fields[i].value + " total";
+                sectionScore[ currMetadata.section] -= parseInt( fields[i].value );
+            }
+        }
 
         // Write out comment
         var comment = "";
