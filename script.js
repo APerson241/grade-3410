@@ -193,9 +193,9 @@ document.addEventListener( "DOMContentLoaded", function() {
                 currMetadata = inputMapping[ checkboxes[i].id ];
                 sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim();
                 if( checkboxes[i].dataset.stylesection === "false" ) {
-                    sectionScore[ currMetadata.section ] += parseInt( checkboxes[i].value );
+                    sectionScore[ currMetadata.section ] += parseFloat( checkboxes[i].value );
                 } else {
-                    styleSubscore += parseInt( checkboxes[i].value );
+                    styleSubscore += parseFloat( checkboxes[i].value );
                 }
                 //sectionScore[ currMetadata.section ] -=
                 //        parseInt( currMetadata.line.substring(
@@ -212,13 +212,13 @@ document.addEventListener( "DOMContentLoaded", function() {
         var fields = document.querySelectorAll( "input[type=text]" );
         for( var i = 0; i < fields.length; i++ ) {
             currMetadata = inputMapping[ fields[i].id ];
-            if( fields[i].value.length && parseInt( fields[i].value ) < currMetadata.max && fields[i].value !== "0" ) {
+            if( fields[i].value.length && parseFloat( fields[i].value ) < currMetadata.max && fields[i].value !== "0" ) {
                 if( fields[i].id.includes( "-pos-" ) ) {
-                    sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim().replace( "[-/", "[" + parseInt( fields[i].value ) + "/" ) + " -> ";
-                    pointsDeducted = currMetadata.max - parseInt( fields[i].value );
+                    sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim().replace( "[-/", "[" + parseFloat( fields[i].value ) + "/" ) + " -> ";
+                    pointsDeducted = currMetadata.max - parseFloat( fields[i].value );
                 } else {
                     sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim() + " -> ";
-                    pointsDeducted = parseInt( fields[i].value );
+                    pointsDeducted = parseFloat( fields[i].value );
                 }
                 sectionText[ currMetadata.section ] += pointsDeducted + " deducted";
                 sectionScore[ currMetadata.section] -= pointsDeducted;
