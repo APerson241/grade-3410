@@ -220,7 +220,7 @@ document.addEventListener( "DOMContentLoaded", function() {
                     sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim() + " -> ";
                     pointsDeducted = parseFloat( fields[i].value );
                 }
-                sectionText[ currMetadata.section ] += pointsDeducted + " deducted";
+                sectionText[ currMetadata.section ] += pointsDeducted + " points deducted";
                 sectionScore[ currMetadata.section] -= pointsDeducted;
             }
         }
