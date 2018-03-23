@@ -212,7 +212,7 @@ document.addEventListener( "DOMContentLoaded", function() {
         var fields = document.querySelectorAll( "input[type=text]" );
         for( var i = 0; i < fields.length; i++ ) {
             currMetadata = inputMapping[ fields[i].id ];
-            if( fields[i].value.length && parseFloat( fields[i].value ) < currMetadata.max && fields[i].value !== "0" ) {
+            if( fields[i].value.length && parseFloat( fields[i].value ) < currMetadata.max && ( fields[i].value !== "0" || fields[i].id.includes( "-pos-" ) ) ) {
                 if( fields[i].id.includes( "-pos-" ) ) {
                     sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim().replace( "[-/", "[" + parseFloat( fields[i].value ) + "/" ) + " -> ";
                     pointsDeducted = currMetadata.max - parseFloat( fields[i].value );
