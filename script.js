@@ -5,12 +5,13 @@ var props = {
 
 // Index into each property with (projectNum - 1)
 var config = {
-    maxStyleDeduct: [ 5, 10 ],
-    asteriskLines: [ 2, 1 ],
-    tooManyAsteriskLines: [ 3, 1 ],
+    maxStyleDeduct: [ 5, 10, 10 ],
+    asteriskLines: [ 2, 1, 1 ],
+    tooManyAsteriskLines: [ 3, 1, 1 ],
     sectionNameMapping: [
         { "CIRCUIT": "Circuit", "DOCUMENTATION": "Documentation", "TEST VECTORS": "Testing" },
-        { "Circuit": "Circuit", "Documentation": "Documentation", "Testing": "Testing", "Fibonacci": "Fibonacci" }
+        { "Circuit": "Circuit", "Documentation": "Documentation", "Testing": "Testing", "Fibonacci": "Fibonacci" },
+        { "Circuit": "Circuit", "Documentation": "Documentation", "Testing": "Testing", "Fibonacci": "Fibonacci" }, 
     ]
 };
 
@@ -21,8 +22,8 @@ document.addEventListener( "DOMContentLoaded", function() {
         var rubricEl = document.getElementById( "rubric" );
         var lines = rubricAreaEl.value.split( "\n" );
 
-        // PROJECT 1/2 ID
-        props.projectNum = lines[0].includes( "P2" ) ? 2 : 1;
+        // PROJECT IDENT
+        props.projectNum = lines[0].includes( "P2" ) ? 2 : ( lines[0].includes( "P3" ) ? 3 : 1 );
 
         var newHtml = "";
         var asteriskLineCount = 0;
@@ -181,6 +182,11 @@ document.addEventListener( "DOMContentLoaded", function() {
             var sectionText = { "Circuit": "", "Documentation": "", "Testing": "", "Fibonacci": "" };
             var sectionScore = { "Circuit": 75, "Documentation": 10, "Testing": 15, "Fibonacci": 10 };
             var sectionMaxScore = { "Circuit": 75, "Documentation": 10, "Testing": 15, "Fibonacci": 10 };
+            break;
+        case 3:
+            var sectionText = { "Circuit": "", "Documentation": "", "Testing": "", "Fibonacci": "" };
+            var sectionScore = { "Circuit": 75, "Documentation": 8, "Testing": 15, "Fibonacci": 18 };
+            var sectionMaxScore = { "Circuit": 75, "Documentation": 8, "Testing": 15, "Fibonacci": 18 };
             break;
         }
 
