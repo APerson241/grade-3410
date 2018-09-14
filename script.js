@@ -36,6 +36,11 @@ document.addEventListener( "DOMContentLoaded", function() {
         var lineIsDeduction = false;
         var inStyleSection = false; // are we in the "style" section
 
+        // Freeform text entry ("triple x")
+        // Maps the text that'll be replaced to field IDs
+        // ("X_X_X operations resulted in failed test cases")
+        window.freeformMapping = {};
+
         // Multi-deduction questions
         var multiDeduction;
         switch( props.projectNum ) {
@@ -46,7 +51,8 @@ document.addEventListener( "DOMContentLoaded", function() {
                 "de, e.g. failing both": 26,
                 "Control logic": 3,
                 "Subcircuit descriptions are": 3,
-                "Didn't explain how": 20
+                "Didn't explain how": 20,
+                "resulted in failed test cases": 26
             };
             break;
         case 2:
@@ -143,6 +149,12 @@ document.addEventListener( "DOMContentLoaded", function() {
                         " data-stylesection='" + inStyleSection + "'/>";
                     window.inputMapping[id] = { line: currLine, section: currSection };
                 }
+
+                // Handle freeform stuff
+                if( currLine.indexOf( "XXX" ) >= 0 ) {
+                    window.freeformMapping[currLine.trim()] = Object.keys( window.freeformMapping ).length;
+                    currLine = currLine.replace( "XXX", "<input type='text' style='width: 4em' class='freeform' id='freeform-" + ( Object.keys( window.freeformMapping ).length - 1 ) + "' />" );
+                }
                 newHtml += "<label for='" + id + "'>" + currLine.replace( /^\s*\*/, "") + "</label><br />";
                 hidingLine = true;
             }
@@ -192,12 +204,18 @@ document.addEventListener( "DOMContentLoaded", function() {
 
         var currMetadata;
 
+        function applyFreeform( currLineTxt ) {
+            if( currLineTxt.indexOf( "XXX" ) < 0 ) return currLineTxt;
+            console.log(currLineTxt);
+            return currLineTxt.replace( "XXX", document.getElementById( "freeform-" + window.freeformMapping[ currLineTxt ] ).value );
+        }
+
         var checkboxes = document.querySelectorAll( "input[type=checkbox]" );
         var styleSubscore = 0;
         for( var i = 0; i < checkboxes.length; i++ ) {
             if( checkboxes[i].checked ) {
                 currMetadata = inputMapping[ checkboxes[i].id ];
-                sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim();
+                sectionText[ currMetadata.section ] += "<br />" + applyFreeform( currMetadata.line.trim() );
                 if( checkboxes[i].dataset.stylesection === "false" ) {
                     sectionScore[ currMetadata.section ] += parseFloat( checkboxes[i].value );
                 } else {
@@ -215,15 +233,17 @@ document.addEventListener( "DOMContentLoaded", function() {
 
         sectionScore[ "Circuit" ] += styleSubscore;
 
-        var fields = document.querySelectorAll( "input[type=text]" );
+        console.log(window.freeformMapping);
+
+        var fields = document.querySelectorAll( "input[type=text]:not(.freeform)" );
         for( var i = 0; i < fields.length; i++ ) {
             currMetadata = inputMapping[ fields[i].id ];
             if( fields[i].value.length && parseFloat( fields[i].value ) < currMetadata.max && ( fields[i].value !== "0" || fields[i].id.includes( "-pos-" ) ) ) {
                 if( fields[i].id.includes( "-pos-" ) ) {
-                    sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim().replace( "[-/", "[" + parseFloat( fields[i].value ) + "/" ) + " -> ";
+                    sectionText[ currMetadata.section ] += "<br />" + applyFreeform( currMetadata.line.trim() ).replace( "[-/", "[" + parseFloat( fields[i].value ) + "/" ) + " -> ";
                     pointsDeducted = currMetadata.max - parseFloat( fields[i].value );
                 } else {
-                    sectionText[ currMetadata.section ] += "<br />" + currMetadata.line.trim() + " -> ";
+                    sectionText[ currMetadata.section ] += "<br />" + applyFreeform( currMetadata.line.trim() ) + " -> ";
                     pointsDeducted = parseFloat( fields[i].value );
                 }
                 sectionText[ currMetadata.section ] += pointsDeducted + " point" + (pointsDeducted === 1 ? "" : "s") + " deducted";
