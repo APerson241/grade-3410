@@ -263,6 +263,7 @@ document.addEventListener( "DOMContentLoaded", function() {
             }
             comment += sectionText[currSec];
         }
+        comment += "<br /><br />" + document.getElementById( "general-comments" ).value;
         return comment;
     }
 } );
