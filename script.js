@@ -52,7 +52,7 @@ document.addEventListener( "DOMContentLoaded", function() {
                 "Control logic": 3,
                 "Subcircuit descriptions are": 3,
                 "Didn't explain how": 20,
-                "resulted in failed test cases": 26
+                "resulted in failed test cases": 26,
                 "Test vector does not": 3,
                 "Does not cover corner": 6,
                 "Does not have random": 6
