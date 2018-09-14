@@ -118,7 +118,7 @@ document.addEventListener( "DOMContentLoaded", function() {
             //if( ( /\s*\[/.test( currLine ) || lines[i-1].endsWith( " or" ) ) && !isHere( "STOP" ) && !isHere( "ineff" ) ) {
             if( deductionMatch ) {
                 var slashIndex = currLine.indexOf( "[-/" );
-                console.log(slashIndex, currLine);
+                //console.log(slashIndex, currLine);
                 var id;
                 var maxPosMatch;
                 var maxPos; // maximum score for this item, in positive grading
@@ -206,7 +206,6 @@ document.addEventListener( "DOMContentLoaded", function() {
 
         function applyFreeform( currLineTxt ) {
             if( currLineTxt.indexOf( "XXX" ) < 0 ) return currLineTxt;
-            console.log(currLineTxt);
             return currLineTxt.replace( "XXX", document.getElementById( "freeform-" + window.freeformMapping[ currLineTxt ] ).value );
         }
 
@@ -232,8 +231,6 @@ document.addEventListener( "DOMContentLoaded", function() {
         if( styleOverflow ) styleSubscore = -maxStyleDeduct;
 
         sectionScore[ "Circuit" ] += styleSubscore;
-
-        console.log(window.freeformMapping);
 
         var fields = document.querySelectorAll( "input[type=text]:not(.freeform)" );
         for( var i = 0; i < fields.length; i++ ) {
